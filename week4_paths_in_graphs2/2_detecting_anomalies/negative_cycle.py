@@ -1,28 +1,33 @@
 import sys
 
 def negative_cycle(adj, cost):
-    n = len(adj)
-    dist = [float('inf')] * n
-    dist[0] = 0  # Start with the first vertex (assuming 0-indexed)
-    
-    # Bellman-Ford algorithm: Perform n-1 relaxations
-    for i in range(n - 1):
-        for u in range(n):
+    # Initialize distance array with a very large number
+    longest = []
+    for item in cost:
+        longest.extend(item)
+    max_dist = sum(longest) + 1
+    dist = [max_dist] * len(adj)
+    prev = [-1] * len(adj)
+
+    dist[0] = 0  # Start with the first vertex
+
+    def relax(u, v, i):
+        if dist[v] > dist[u] + cost[u][i]:
+            dist[v] = dist[u] + cost[u][i]
+            prev[v] = u
+            return True
+        return False
+
+    # Bellman-Ford: Perform n-1 iterations of relaxation
+    for i in range(len(adj)):
+        for u in range(len(adj)):
             for j in range(len(adj[u])):
                 v = adj[u][j]
-                weight = cost[u][j]
-                if dist[u] != float('inf') and dist[v] > dist[u] + weight:
-                    dist[v] = dist[u] + weight
+                if relax(u, v, j) and i == len(adj) - 1:
+                    # If we're on the nth iteration and a relaxation occurs, we have a negative cycle
+                    return 1
 
-    # Check for negative-weight cycles
-    for u in range(n):
-        for j in range(len(adj[u])):
-            v = adj[u][j]
-            weight = cost[u][j]
-            if dist[u] != float('inf') and dist[v] > dist[u] + weight:
-                return 1  # Negative cycle detected
-
-    return 0  # No negative cycle
+    return 0
 
 if __name__ == '__main__':
     input = sys.stdin.read()
